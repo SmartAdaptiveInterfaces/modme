@@ -13,9 +13,11 @@ d3.chart("AircraftCoordination", {
   initialize: function (options = {}) {
     var chart = this;
 
+    var currentlyMoving = false;
+
     chart.h = chart.base.h;
     chart.w = chart.base.w;
-    
+
     chart.response = [];
     chart.alert = []; // TODO investigate if this does anything
     chart.timeout = []; // TODO investigate if we can delete this or if it is used anywhere
@@ -35,9 +37,9 @@ d3.chart("AircraftCoordination", {
       try {
         var l = path.getTotalLength();
       } catch {
-        var l = 2000
+        var l = 2000;
       }
-      
+
       return function (d, i, a) {
         return function (t) {
           try {
@@ -45,19 +47,17 @@ d3.chart("AircraftCoordination", {
           } catch {
             return "translate(" + 1 + "," + 1 + ")";
           }
-          
+
           return "translate(" + p.x + "," + p.y + ")";
         };
       };
     };
 
-    
-
     chart.translatePlaneAlong = function (path) {
       try {
         var l = path.getTotalLength();
       } catch {
-        var l = 2000
+        var l = 2000;
       }
       return function (d, i, a) {
         return function (t) {
@@ -72,30 +72,23 @@ d3.chart("AircraftCoordination", {
 
           let distance = Math.sqrt(x * x + y * y);
 
-          if (clicked ){
-            chart.response.forEach(function (d) {
-              d({ position: "x: " + p.x + ", y: " + p.y, domID: "aircraftCoordination", time: new Date().getTime() });
-            });
-          }
-
           if (distance <= 50) {
-            //chart.base.select("path.inboundPlane").remove();
             if (clicked && collision) {
               movePlane();
               return "translate(" + p.x + "," + p.y + ")";
-              
             }
-            
+
             chart.base
               .select("path.safeUserPlane")
               .style("fill", "red")
               .style("stroke", "red");
 
-              chart.timeout.forEach(function(d){d({domID: "aircraftCoordination"})});
-              collision = false;
+            chart.timeout.forEach(function (d) {
+              d({ domID: "aircraftCoordination" });
+            });
+            collision = false;
 
             return "translate(" + p.x + "," + p.y + ")";
-            //chart.base.select("line.planeLine").remove();
           } else {
             return "translate(" + p.x + "," + p.y + ")";
           }
@@ -126,7 +119,6 @@ d3.chart("AircraftCoordination", {
         .attrTween("transform", chart.translateObjectAlong(line.node()))
         .each("end", chart.translate);
     };
-
 
     var map = chart.base
       .append("g")
@@ -164,39 +156,38 @@ d3.chart("AircraftCoordination", {
 
     function makeLines() {
       lines = map
-      .selectAll("line")
-      .data([
-        1, 2, 1, 3, 2, 1, 3, 2, 1, 3, 2, 4, 3, 1, 2, 2, 2, 1, 3, 2, 2, 2, 2, 2,
-        2,
-      ])
-      .enter()
-      .append("line")
-      .attr("x1", 0)
-      .attr("x2", 1300)
-      .attr("y1", function (d, i) {
-        return i * 50 + 50;
-      })
-      .attr("y2", function (d, i) {
-        return i * 50 + 50;
-      })
-      .attr("stroke", "white")
-      .attr("stroke-width", function (d) {
-        return 0.5;
-      })
-      .transition()
-      .duration(1500000 / chart.data.speed)
-      .ease("linear")
-      .attrTween("transform", chart.translateObjectAlong(line.node()))
-      .each("end", chart.translate);
-      }
-    
+        .selectAll("line")
+        .data([
+          1, 2, 1, 3, 2, 1, 3, 2, 1, 3, 2, 4, 3, 1, 2, 2, 2, 1, 3, 2, 2, 2, 2,
+          2, 2,
+        ])
+        .enter()
+        .append("line")
+        .attr("x1", 0)
+        .attr("x2", 1300)
+        .attr("y1", function (d, i) {
+          return i * 50 + 50;
+        })
+        .attr("y2", function (d, i) {
+          return i * 50 + 50;
+        })
+        .attr("stroke", "white")
+        .attr("stroke-width", function (d) {
+          return 0.5;
+        })
+        .transition()
+        .duration(1500000 / chart.data.speed)
+        .ease("linear")
+        .attrTween("transform", chart.translateObjectAlong(line.node()))
+        .each("end", chart.translate);
+    }
 
-    const linesTimeout = setInterval(function() {
+    const linesTimeout = setInterval(function () {
       if (chart.data) {
-        makeLines()
-        clearTimeout(linesTimeout)
+        makeLines();
+        clearTimeout(linesTimeout);
       }
-    }, 10)
+    }, 10);
 
     function movePlane() {
       notCenter = true;
@@ -204,7 +195,6 @@ d3.chart("AircraftCoordination", {
 
     chart.defaults = {};
     chart.defaults.generateEvent = function () {
-      
       collision = false;
       clicked = false;
       x1 = -1;
@@ -228,7 +218,6 @@ d3.chart("AircraftCoordination", {
 
       var prob = chart.data.collisionProb / 100;
 
-
       if (Math.random() < prob) {
         collision = true;
       }
@@ -244,7 +233,6 @@ d3.chart("AircraftCoordination", {
 
         line2
           // Makes line that the incoming plane travels along visible
-          //.attr("stroke", "white")
           .attr("x1", function (d) {
             // if xOrY >= .5 the plane will start on the left or right edge
             if (xOrY >= 0.5) {
@@ -261,7 +249,7 @@ d3.chart("AircraftCoordination", {
               // plane will start on top or bottom edge
               x1 = Math.random() * chart.w;
             }
-   
+
             return x1;
           })
           .attr("y1", function (d) {
@@ -276,12 +264,11 @@ d3.chart("AircraftCoordination", {
                 y1 = chart.h;
               }
             }
-    
+
             return y1;
           })
 
           .attr("x2", function (d) {
-
             // if started on left plane finishes on right edge
             if (x1 == 0) {
               x2 = chart.w;
@@ -298,22 +285,17 @@ d3.chart("AircraftCoordination", {
                   : (x2 = (-650 + slope * x1) / slope);
               } else {
                 x2 = Math.random() * chart.w;
-                var mid = (x2 + x1) / 2
-                var distance = Math.abs(mid - 650)
-           
-                
-                while (distance < 90) {
-              
-                  x2 = Math.random() * chart.w;
-                  mid = (x2 + x1) / 2
-                  distance = Math.abs(mid - 650)
+                var mid = (x2 + x1) / 2;
+                var distance = Math.abs(mid - 650);
 
+                while (distance < 90) {
+                  x2 = Math.random() * chart.w;
+                  mid = (x2 + x1) / 2;
+                  distance = Math.abs(mid - 650);
                 }
- 
               }
             }
 
-  
             return x2;
           })
           .attr("y2", function (d) {
@@ -327,29 +309,30 @@ d3.chart("AircraftCoordination", {
                 y2 = y1 + (slope * x2 - slope * x1);
               } else {
                 y2 = Math.random() * chart.h;
-                var mid = (y2 + y1) / 2
-                var distance = Math.abs(mid - 325)
-       
-                
-                while (distance < 90) {
-         
-                  y2 = Math.random() * chart.h;
-                  mid = (y2 + y1) / 2
-                  distance = Math.abs(mid - 325)
+                var mid = (y2 + y1) / 2;
+                var distance = Math.abs(mid - 325);
 
+                while (distance < 90) {
+                  y2 = Math.random() * chart.h;
+                  mid = (y2 + y1) / 2;
+                  distance = Math.abs(mid - 325);
                 }
-           
               }
             }
 
             return y2;
           });
 
-          var xD = x2 - x1
-          var yD = y2 - y1
-        var duration = (Math.sqrt((xD * xD) + (yD * yD)) / (Math.random() * (chart.data.incomingSpeed.min  - chart.data.incomingSpeed.max) + chart.data.incomingSpeed.min)) * 2500
-
-        
+        var xD = x2 - x1;
+        var yD = y2 - y1;
+        var duration =
+          (Math.sqrt(xD * xD + yD * yD) /
+            (Math.random() *
+              (chart.data.incomingSpeed.min - chart.data.incomingSpeed.max) +
+              chart.data.incomingSpeed.min)) *
+          2500;
+        console.log(duration);
+        console.log(Date.now());
         incomingPlane
           .append("path")
           .attr(
@@ -365,7 +348,9 @@ d3.chart("AircraftCoordination", {
           .ease("linear")
           .attrTween("transform", chart.translatePlaneAlong(line2.node()));
 
-          chart.alert.forEach(function(d){d({domID: "aircraftCoordination"});});
+        chart.alert.forEach(function (d) {
+          d({ domID: "aircraftCoordination" });
+        });
       }
 
       return null;
@@ -373,9 +358,6 @@ d3.chart("AircraftCoordination", {
 
     chart.eventGenerator(options.generateEvent || chart.defaults.generateEvent);
     chart.raiseEvent = function () {
-
-
-      //chart.data.collisionPlane.push({data: 1})
       var event = chart.generateEvent();
       if (event) {
         event();
@@ -405,7 +387,6 @@ d3.chart("AircraftCoordination", {
       },
 
       insert: function (data) {
-    
         return this.append("path")
           .attr(
             "d",
@@ -419,7 +400,6 @@ d3.chart("AircraftCoordination", {
         enter: function () {
           var chart = this.chart();
           return this;
-
         },
         update: function () {
           return this;
@@ -464,9 +444,6 @@ d3.chart("AircraftCoordination", {
         .style("stroke", "gold");
     }
   },
-
-
-  
 
   // If no arguments are passed returns the start function
   // Other wise sets the start function to the value passed in
