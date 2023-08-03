@@ -79,10 +79,13 @@ document.addEventListener(
           table: "Event",
           eventType: "alert",
           chart: "aircraftCoordination",
-          arg: "",
+          arg: "collisionEvent: " + args.collisionEvent,
           id: args.domID,
           table: "Event",
         });
+
+        console.log(args);
+        console.log("LOGGGG");
       });
       aircraftCoordination_chart.when("response", function (args) {
         data.push({
@@ -90,7 +93,8 @@ document.addEventListener(
           table: "Event",
           eventType: "response",
           chart: "aircraftCoordination",
-          arg: (args.correct ? "correct: " + args.correct : "") + (args.position ? "   position: " +  args.position : ""),
+          arg: "correct: " + args.correct,
+          //(args.position ? " position: " + args.position : ""),
           id: args.domID,
           table: "Event",
         });
@@ -101,7 +105,7 @@ document.addEventListener(
           table: "Event",
           eventType: "timeout",
           chart: "aircraftCoordination",
-          arg: "",
+          arg: "success: " + args.status,
           id: args.domID,
           table: "Event",
         });
@@ -112,23 +116,22 @@ document.addEventListener(
 
     if (aircraftCoordination_data.useJoystick) {
       setInterval(function () {
+        if (navigator.getGamepads()[0] === null) return;
         if (navigator.getGamepads()[0].buttons === null) {
-            return
+          return;
         } else {
-            navigator.getGamepads()[0].buttons.forEach((element, index) => {
-                if (element.pressed) {
-                  if (index == aircraftCoordination_data.joyButton) {
-                    aircraftCoordination_chart.planeAction(new Date().getTime());
-                  }
-                }
-              }, 100);
+          navigator.getGamepads()[0].buttons.forEach((element, index) => {
+            if (element.pressed) {
+              if (index == aircraftCoordination_data.joyButton) {
+                aircraftCoordination_chart.planeAction(new Date().getTime());
+              }
+            }
+          });
         }
-        
-      });
+      }, 100);
     }
 
     keyboard.push(function (e, time) {
-   
       if (aircraftCoordination_data.button.button == e.keyCode) {
         aircraftCoordination_chart.planeAction(time);
       }
