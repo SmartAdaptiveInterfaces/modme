@@ -8,6 +8,7 @@ var x1 = -1;
 var x2 = -1;
 var y1 = -1;
 var y2 = -1;
+var translating = false;
 
 d3.chart("AircraftCoordination", {
   initialize: function (options = {}) {
@@ -83,9 +84,6 @@ d3.chart("AircraftCoordination", {
               .style("fill", "red")
               .style("stroke", "red");
 
-            chart.timeout.forEach(function (d) {
-              d({ domID: "aircraftCoordination" });
-            });
             collision = false;
 
             return "translate(" + p.x + "," + p.y + ")";
@@ -224,10 +222,8 @@ d3.chart("AircraftCoordination", {
 
       var xOrY = Math.random();
 
-      if (eventCounter % 2 == 0) {
-        testData.pop();
-        chart.base.select("path.inboundPlane").remove();
-        chart.base.select("circle.planeBoundary").remove();
+      if (translating) {
+        return;
       } else {
         testData.push(2);
 
@@ -331,8 +327,6 @@ d3.chart("AircraftCoordination", {
               (chart.data.incomingSpeed.min - chart.data.incomingSpeed.max) +
               chart.data.incomingSpeed.min)) *
           2500;
-        console.log(duration);
-        console.log(Date.now());
         incomingPlane
           .append("path")
           .attr(
@@ -348,8 +342,32 @@ d3.chart("AircraftCoordination", {
           .ease("linear")
           .attrTween("transform", chart.translatePlaneAlong(line2.node()));
 
+        translating = true;
+
+        var clearPath = function () {
+          chart.base.select("path.inboundPlane").remove();
+          translating = false;
+          chart.timeout.forEach(function (d) {
+            d({
+              domID: "aircraftCoordination",
+              status: (!collision && !clicked) || (clicked && collision),
+            });
+          });
+          if (notCenter) {
+            chart.base
+              .select("path.safeUserPlane")
+              .attr("transform", "translate(0, 0)");
+          }
+          chart.base
+            .select("path.safeUserPlane")
+            .style("fill", "white")
+            .style("stroke", "white");
+        };
+
+        setTimeout(clearPath, duration);
+
         chart.alert.forEach(function (d) {
-          d({ domID: "aircraftCoordination" });
+          d({ domID: "aircraftCoordination", collisionEvent: collision });
         });
       }
 

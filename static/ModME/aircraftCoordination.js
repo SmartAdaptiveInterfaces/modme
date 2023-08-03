@@ -79,10 +79,13 @@ document.addEventListener(
           table: "Event",
           eventType: "alert",
           chart: "aircraftCoordination",
-          arg: "",
+          arg: "collisionEvent: " + args.collisionEvent,
           id: args.domID,
           table: "Event",
         });
+
+        console.log(args);
+        console.log("LOGGGG");
       });
       aircraftCoordination_chart.when("response", function (args) {
         data.push({
@@ -102,7 +105,7 @@ document.addEventListener(
           table: "Event",
           eventType: "timeout",
           chart: "aircraftCoordination",
-          arg: "",
+          arg: "success: " + args.status,
           id: args.domID,
           table: "Event",
         });
