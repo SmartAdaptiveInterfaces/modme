@@ -2,6 +2,7 @@
 //Planes randomly fly in at intervals
 
 var collision = false;
+var actuallyCollided = false
 var clicked = false;
 var notCenter = false;
 var x1 = -1;
@@ -84,7 +85,9 @@ d3.chart("AircraftCoordination", {
               .style("fill", "red")
               .style("stroke", "red");
 
-            collision = false;
+            actuallyCollided = true
+
+            //collision = false;
 
             return "translate(" + p.x + "," + p.y + ")";
           } else {
@@ -195,6 +198,7 @@ d3.chart("AircraftCoordination", {
     chart.defaults.generateEvent = function () {
       collision = false;
       clicked = false;
+      actuallyCollided = false
       x1 = -1;
       x2 = -1;
       y1 = -1;
@@ -347,10 +351,18 @@ d3.chart("AircraftCoordination", {
         var clearPath = function () {
           chart.base.select("path.inboundPlane").remove();
           translating = false;
+          var result = false;
+          if (actuallyCollided) {
+            result = false
+          } else if (!collision && !clicked) {
+            result = true
+          } else if (clicked && collision) {
+            result = true
+          }
           chart.timeout.forEach(function (d) {
             d({
               domID: "aircraftCoordination",
-              status: (!collision && !clicked) || (clicked && collision),
+              status: result,
             });
           });
           if (notCenter) {
@@ -434,12 +446,20 @@ d3.chart("AircraftCoordination", {
 
   planeAction: function (time) {
     var chart = this;
+    var result = ""
+    if (actuallyCollided) {
+      result = "False, late response"
+    } else if (collision) {
+      result = "True, collision avoided"
+    } else if (!collision) {
+      result = "False, click with no collision"
+    }
 
     this.response.forEach(function (d) {
-      d({ correct: collision, domID: "aircraftCoordination", time: time });
+      d({ correct: result, domID: "aircraftCoordination", time: time });
     });
     clicked = true;
-    if (collision) {
+    if (collision && !actuallyCollided) {
       if (x1 == 0 || x2 == 0) {
         chart.base
           .select("path.safeUserPlane")
