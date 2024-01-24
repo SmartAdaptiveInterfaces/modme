@@ -93,7 +93,7 @@ document.addEventListener(
           table: "Event",
           eventType: "response",
           chart: "aircraftCoordination",
-          arg: "correct: " + args.correct,
+          arg: "response: " + args.correct,
           //(args.position ? " position: " + args.position : ""),
           id: args.domID,
           table: "Event",
@@ -105,7 +105,7 @@ document.addEventListener(
           table: "Event",
           eventType: "timeout",
           chart: "aircraftCoordination",
-          arg: "success: " + args.status,
+          arg: "result: " + args.status,
           id: args.domID,
           table: "Event",
         });

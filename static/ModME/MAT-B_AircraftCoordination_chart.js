@@ -2,7 +2,7 @@
 //Planes randomly fly in at intervals
 
 var collision = false;
-var actuallyCollided = false
+var actuallyCollided = false;
 var clicked = false;
 var notCenter = false;
 var x1 = -1;
@@ -85,7 +85,7 @@ d3.chart("AircraftCoordination", {
               .style("fill", "red")
               .style("stroke", "red");
 
-            actuallyCollided = true
+            actuallyCollided = true;
 
             //collision = false;
 
@@ -198,7 +198,7 @@ d3.chart("AircraftCoordination", {
     chart.defaults.generateEvent = function () {
       collision = false;
       clicked = false;
-      actuallyCollided = false
+      actuallyCollided = false;
       x1 = -1;
       x2 = -1;
       y1 = -1;
@@ -353,11 +353,11 @@ d3.chart("AircraftCoordination", {
           translating = false;
           var result = false;
           if (actuallyCollided) {
-            result = false
+            result = "Fail";
           } else if (!collision && !clicked) {
-            result = true
+            result = "Correct Rejection";
           } else if (clicked && collision) {
-            result = true
+            result = "Hit";
           }
           chart.timeout.forEach(function (d) {
             d({
@@ -446,13 +446,13 @@ d3.chart("AircraftCoordination", {
 
   planeAction: function (time) {
     var chart = this;
-    var result = ""
+    var result = "";
     if (actuallyCollided) {
-      result = "False, late response"
+      result = "Miss";
     } else if (collision) {
-      result = "True, collision avoided"
+      result = "Hit";
     } else if (!collision) {
-      result = "False, click with no collision"
+      result = "False Alarm";
     }
 
     this.response.forEach(function (d) {

@@ -109,11 +109,14 @@ def conditionInstructions(request):
 
     splitList = conditionList.split(',')
 
+    print(conditionList)
+    print(experimentModel.random)
+
     if (conditionList == ""):
         conditionList = experimentModel.conditions
         splitList = conditionList.split(',')
-        if (experimentModel.random):
-            random.shuffle(splitList)
+    if (experimentModel.random):
+        random.shuffle(splitList)
 
     conditionIndex = 0
     if ('conditionIndex' in request.POST):
@@ -121,6 +124,8 @@ def conditionInstructions(request):
 
     conditionID = splitList[conditionIndex]
     conditionModel = Condition.objects.get(id=str(conditionID))
+
+    print(splitList)
 
     pdf = conditionModel.instructional_pdf
 
