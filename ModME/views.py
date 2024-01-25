@@ -112,8 +112,8 @@ def conditionInstructions(request):
     if (conditionList == ""):
         conditionList = experimentModel.conditions
         splitList = conditionList.split(',')
-        if (experimentModel.random):
-            random.shuffle(splitList)
+    if (experimentModel.random):
+        random.shuffle(splitList)
 
     conditionIndex = 0
     if ('conditionIndex' in request.POST):
