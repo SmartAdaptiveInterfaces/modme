@@ -353,7 +353,7 @@ d3.chart("AircraftCoordination", {
           translating = false;
           var result = false;
           if (actuallyCollided) {
-            result = "Fail";
+            result = "Miss";
           } else if (!collision && !clicked) {
             result = "Correct Rejection";
           } else if (clicked && collision) {
@@ -447,40 +447,54 @@ d3.chart("AircraftCoordination", {
   planeAction: function (time) {
     var chart = this;
     var result = "";
-    if (actuallyCollided) {
-      result = "Miss";
-    } else if (collision) {
-      result = "Hit";
-    } else if (!collision) {
-      result = "False Alarm";
+    if (!translating) {
+      result = "False Alarm"
+    } else {
+      if (actuallyCollided) {
+        result = "Miss";
+      } else if (collision) {
+        result = "Hit";
+      } else if (!collision) {
+        result = "False Alarm";
+      }
     }
+   
 
     this.response.forEach(function (d) {
       d({ correct: result, domID: "aircraftCoordination", time: time });
     });
     clicked = true;
-    if (collision && !actuallyCollided) {
-      if (x1 == 0 || x2 == 0) {
-        chart.base
+    if (!translating) {
+      chart.base
           .select("path.safeUserPlane")
-          .style("fill", "green")
-          .style("stroke", "green")
-          .transition()
-          .attr("transform", "translate(0, 150)");
+          .style("fill", "gold")
+          .style("stroke", "gold");
+      return
+    } else {
+      if (collision && !actuallyCollided) {
+        if (x1 == 0 || x2 == 0) {
+          chart.base
+            .select("path.safeUserPlane")
+            .style("fill", "green")
+            .style("stroke", "green")
+            .transition()
+            .attr("transform", "translate(0, 150)");
+        } else {
+          chart.base
+            .select("path.safeUserPlane")
+            .style("fill", "green")
+            .style("stroke", "green")
+            .transition()
+            .attr("transform", "translate(150, 0)");
+        }
       } else {
         chart.base
           .select("path.safeUserPlane")
-          .style("fill", "green")
-          .style("stroke", "green")
-          .transition()
-          .attr("transform", "translate(150, 0)");
+          .style("fill", "gold")
+          .style("stroke", "gold");
       }
-    } else {
-      chart.base
-        .select("path.safeUserPlane")
-        .style("fill", "gold")
-        .style("stroke", "gold");
     }
+    
   },
 
   // If no arguments are passed returns the start function
