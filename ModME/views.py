@@ -92,47 +92,39 @@ def instructions(request):
 
     return render(request, 'ModME/instructions.html', parameters)
 
-
 def conditionInstructions(request):
-
     experimentModel = Experiment.objects.get(pk=request.POST['experimentId'])
-    conditionList = experimentModel.conditions
-
     experimentId = request.POST['experimentId']
     participantAlias = request.POST['participantAlias']
     sessionName = request.POST['sessionName']
     studyName = request.POST['studyName']
 
-    metadataId = None
-    if ('metadata_id' in request.POST):
-        metadataId = request.POST['metadata_id']
-
-    splitList = conditionList.split(',')
-
-    print(conditionList)
-    print(experimentModel.random)
-
-    if (conditionList == ""):
+    metadataId = request.POST.get('metadata_id', None)
+    
+    if 'conditionList' not in request.session:
         conditionList = experimentModel.conditions
         splitList = conditionList.split(',')
-    if (experimentModel.random):
-        random.shuffle(splitList)
+        if experimentModel.random:
+            random.shuffle(splitList)
+        request.session['conditionList'] = splitList
+        request.session['conditionIndex'] = 0
+    else:
+        splitList = request.session['conditionList']
+        conditionIndex = request.session['conditionIndex']
+    
+    conditionIndex = request.session['conditionIndex'] + 1 if 'conditionIndex' in request.POST else 0
+    request.session['conditionIndex'] = conditionIndex
 
-    conditionIndex = 0
-    if ('conditionIndex' in request.POST):
-        conditionIndex = int(request.POST['conditionIndex']) + 1
-
+    if conditionIndex >= len(splitList):
+        conditionIndex = 0
+        request.session['conditionIndex'] = conditionIndex
+    
     conditionID = splitList[conditionIndex]
     conditionModel = Condition.objects.get(id=str(conditionID))
 
-    print(splitList)
-
     pdf = conditionModel.instructional_pdf
 
-    if conditionModel.skip_instructions is None or conditionModel.skip_instructions is True:
-        skipInstructions = True
-    else:
-        skipInstructions = False
+    skipInstructions = conditionModel.skip_instructions is None or conditionModel.skip_instructions is True
 
     context = {
         'experimentId': experimentId,
@@ -144,10 +136,11 @@ def conditionInstructions(request):
         'conditionList': ','.join(map(str, splitList)),
         'pdf': pdf,
         'skipInstructions': skipInstructions,
-        'eventReuseMetadataId': request.POST.get('metadataId'),
-
+        'eventReuseMetadataId': metadataId,
     }
+    
     return render(request, 'ModME/conditionInstructions.html', context)
+
 
 
 def begin(request):
