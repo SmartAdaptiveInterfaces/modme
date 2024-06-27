@@ -30,7 +30,7 @@ import os
 from collections import OrderedDict
 
 # Loads ModME experimentation setup page
-# Sends parameter object, Participant ID, session number, and condition to Experiment page
+# Sends parameter object, Participant ID, session number, and condition to Experiment pag
 
 
 def index(request):
@@ -93,38 +93,35 @@ def instructions(request):
     return render(request, 'ModME/instructions.html', parameters)
 
 def conditionInstructions(request):
-    experimentModel = Experiment.objects.get(pk=request.POST['experimentId'])
     experimentId = request.POST['experimentId']
+    experimentModel = Experiment.objects.get(pk=experimentId)
+    conditionList = experimentModel.conditions.split(',')
+
     participantAlias = request.POST['participantAlias']
     sessionName = request.POST['sessionName']
     studyName = request.POST['studyName']
 
-    metadataId = request.POST.get('metadata_id', None)
-    
-    if 'conditionList' not in request.session:
-        conditionList = experimentModel.conditions
-        splitList = conditionList.split(',')
+    metadataId = None
+    if 'metadata_id' in request.POST:
+        metadataId = request.POST['metadata_id']
+
+    conditionIndex = 0
+    if 'conditionIndex' in request.POST:
+        conditionIndex = int(request.POST['conditionIndex']) + 1
+
+    if conditionIndex == 0:
         if experimentModel.random:
-            random.shuffle(splitList)
-        request.session['conditionList'] = splitList
-        request.session['conditionIndex'] = 0
+            print("Triggering Randomizer")
+            random.shuffle(conditionList)
+        request.session[f'condition_list_{experimentId}'] = conditionList
     else:
-        splitList = request.session['conditionList']
-        conditionIndex = request.session['conditionIndex']
-    
-    conditionIndex = request.session['conditionIndex'] + 1 if 'conditionIndex' in request.POST else 0
-    request.session['conditionIndex'] = conditionIndex
+        conditionList = request.session.get(f'condition_list_{experimentId}', conditionList)
 
-    if conditionIndex >= len(splitList):
-        conditionIndex = 0
-        request.session['conditionIndex'] = conditionIndex
-    
-    conditionID = splitList[conditionIndex]
+    conditionID = conditionList[conditionIndex]
     conditionModel = Condition.objects.get(id=str(conditionID))
-
     pdf = conditionModel.instructional_pdf
 
-    skipInstructions = conditionModel.skip_instructions is None or conditionModel.skip_instructions is True
+    skipInstructions = conditionModel.skip_instructions is None or conditionModel.skip_instructions
 
     context = {
         'experimentId': experimentId,
@@ -133,19 +130,22 @@ def conditionInstructions(request):
         'studyName': studyName,
         'metadataId': metadataId,
         'participantAlias': participantAlias,
-        'conditionList': ','.join(map(str, splitList)),
+        'conditionList': ','.join(map(str, conditionList)),
         'pdf': pdf,
         'skipInstructions': skipInstructions,
-        'eventReuseMetadataId': metadataId,
+        'eventReuseMetadataId': request.POST.get('metadataId'),
     }
-    
+
     return render(request, 'ModME/conditionInstructions.html', context)
 
 
 
+
 def begin(request):
+
     
     experimentId = request.POST['experimentId']
+    experimentModel = Experiment.objects.get(pk=request.POST['experimentId'])
     participantAlias = request.POST['participantAlias']
     sessionName = request.POST['sessionName']
     studyName = request.POST['studyName']
@@ -158,6 +158,7 @@ def begin(request):
     conditionList = ""
     if ('conditionList' in request.POST):
         conditionList = request.POST['conditionList']
+      
     parameters = {
         'experimentId': experimentId,
         'conditionIndex': conditionIndex,
